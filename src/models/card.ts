@@ -18,6 +18,6 @@ const cardSchema = new Schema<ICard>({
     type: [Schema.Types.ObjectId], ref: 'user', required: true, default: [],
   },
   createdAt: { type: Date, required: true, default: Date.now() },
-});
+}, { versionKey: false });
 
 export default mongoose.model<ICard>('card', cardSchema);
