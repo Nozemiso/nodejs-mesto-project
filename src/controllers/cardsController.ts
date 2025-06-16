@@ -25,7 +25,7 @@ export const createCard = (req: Request, res: Response, next: NextFunction) => {
 export const deleteCard = (req: Request, res: Response, next: NextFunction) => {
   const { id } = req.params;
   card.remove({ _id: id }).then((result) => {
-    if (result.deletedCount === 0) throw new NotFoundError('Карточка с указанным _id не найдена.');
+    if (result.deletedCount === 0) next(new NotFoundError('Карточка с указанным _id не найдена.'));
     res.send(result);
   }).catch((err) => {
     if (err instanceof Error.CastError || err instanceof Error.ValidationError) next(new BadRequestError('Передан некорректный _id карточки. '));
@@ -38,7 +38,7 @@ export const placeLike = (req: Request, res: Response, next: NextFunction) => {
   card.findByIdAndUpdate(id, {
     $addToSet: { likes: req.body.user.id },
   }, { new: true }).then((result) => {
-    if (!result) throw new NotFoundError('Передан несуществующий _id карточки. ');
+    if (!result) next(new NotFoundError('Передан несуществующий _id карточки.'));
     res.send(result);
   })
     .catch((err) => {
@@ -53,7 +53,7 @@ export const removeLike = (req: Request, res: Response, next: NextFunction) => {
     $pull: { likes: req.body.user.id },
   }, { new: true })
     .then((result) => {
-      if (!result) throw new NotFoundError('Передан несуществующий _id карточки. ');
+      if (!result) next(new NotFoundError('Передан несуществующий _id карточки.'));
       res.send(result);
     })
     .catch((err) => {

@@ -27,7 +27,7 @@ export const getUser = (req: Request, res: Response, next: NextFunction) => {
   const id = String(req.params.id);
   user.findById(id)
     .then((result) => {
-      if (!result) throw new NotFoundError('Пользователь по указанному _id не найден.');
+      if (!result) next(new NotFoundError('Пользователь по указанному _id не найден.'));
       res.send(result);
     }).catch((err) => {
       if (err instanceof Error.CastError || err instanceof Error.ValidationError) next(new BadRequestError('Передан некорректный _id пользователя. '));
@@ -40,7 +40,7 @@ export const updateUser = (req: Request, res: Response, next: NextFunction) => {
   const { id } = req.body.user;
   user.findByIdAndUpdate({ _id: id }, { name, about }, { new: true })
     .then((result) => {
-      if (!result) throw new NotFoundError('Пользователь по указанному _id не найден.');
+      if (!result) next(new NotFoundError('Пользователь по указанному _id не найден.'));
       res.send(result);
     }).catch((err) => {
       if (err instanceof Error.CastError || err instanceof Error.ValidationError) next(new BadRequestError('Переданы некорректные данные при обновлении профиля. '));
@@ -53,7 +53,7 @@ export const updateAvatar = (req: Request, res: Response, next: NextFunction) =>
   const { id } = req.body.user;
   user.findByIdAndUpdate({ _id: id }, { avatar }, { new: true })
     .then((result) => {
-      if (!result) throw new NotFoundError('Пользователь по указанному _id не найден.');
+      if (!result) next(new NotFoundError('Пользователь по указанному _id не найден.'));
       res.send(result);
     })
     .catch((err) => {
