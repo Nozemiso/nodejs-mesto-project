@@ -3,7 +3,8 @@ import mongoose from 'mongoose';
 import express, { NextFunction, Request, Response } from 'express';
 import usersRouter from './routes/usersRouter';
 import cardsRouter from './routes/cardsRouter';
-import errorHandling from './middlewares/errorHandler';
+import NotFoundError from './errors/notFoundError';
+import errorHandler from './middlewares/errorHandler';
 
 mongoose.connect('mongodb://localhost:27017/mestodb');
 
@@ -19,7 +20,9 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 
 app.use('/users', usersRouter);
 app.use('/cards', cardsRouter);
-
-app.use(errorHandling);
+app.use('*', (req, res, next) => {
+  next(new NotFoundError('Запрашиваемый ресурс не найден'));
+});
+app.use(errorHandler);
 
 app.listen(3000);

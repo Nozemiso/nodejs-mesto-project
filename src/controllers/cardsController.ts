@@ -8,17 +8,17 @@ import InternalServerError from '../errors/internalServerError';
 export const getCards = (req: Request, res: Response, next: NextFunction) => {
   card.find({}).then((cards) => {
     res.send(cards);
-  }).catch((err) => next(new InternalServerError(err)));
+  }).catch((err) => next(err));
 };
 
 export const createCard = (req: Request, res: Response, next: NextFunction) => {
   const { name, link } = req.body;
   const owner = req.body.user.id;
   card.create({ name, link, owner }).then((result) => {
-    res.send(result);
+    res.status(201).send(result);
   }).catch((err) => {
     if (err instanceof Error.CastError || err instanceof Error.ValidationError) next(new BadRequestError('Переданы некорректные данные при создании карточки. '));
-    else next(new InternalServerError(err));
+    else next(err);
   });
 };
 
@@ -29,7 +29,7 @@ export const deleteCard = (req: Request, res: Response, next: NextFunction) => {
     res.send(result);
   }).catch((err) => {
     if (err instanceof Error.CastError || err instanceof Error.ValidationError) next(new BadRequestError('Передан некорректный _id карточки. '));
-    else next(new InternalServerError(err));
+    else next(err);
   });
 };
 
@@ -43,7 +43,7 @@ export const placeLike = (req: Request, res: Response, next: NextFunction) => {
   })
     .catch((err) => {
       if (err instanceof Error.CastError || err instanceof Error.ValidationError) next(new BadRequestError('Переданы некорректные данные для постановки/снятия лайка или некорректный _id карточки. '));
-      else next(new InternalServerError(err));
+      else next(err);
     });
 };
 
@@ -58,6 +58,6 @@ export const removeLike = (req: Request, res: Response, next: NextFunction) => {
     })
     .catch((err) => {
       if (err instanceof Error.CastError || err instanceof Error.ValidationError) next(new BadRequestError('Переданы некорректные данные для постановки/снятия лайка или некорректный _id карточки. '));
-      else next(new InternalServerError(err));
+      else next(err);
     });
 };
