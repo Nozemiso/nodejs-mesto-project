@@ -3,7 +3,6 @@ import { Error } from 'mongoose';
 import card from '../models/card';
 import NotFoundError from '../errors/notFoundError';
 import BadRequestError from '../errors/badRequestError';
-import InternalServerError from '../errors/internalServerError';
 
 export const getCards = (req: Request, res: Response, next: NextFunction) => {
   card.find({}).then((cards) => {

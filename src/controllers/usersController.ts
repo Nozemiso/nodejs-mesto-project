@@ -3,7 +3,6 @@ import { Error } from 'mongoose';
 import user from '../models/user';
 import NotFoundError from '../errors/notFoundError';
 import BadRequestError from '../errors/badRequestError';
-import InternalServerError from '../errors/internalServerError';
 
 export const createUser = (req: Request, res: Response, next: NextFunction) => {
   const { name, about, avatar } = req.body;
