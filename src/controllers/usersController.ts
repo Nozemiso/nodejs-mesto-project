@@ -1,17 +1,28 @@
 import { NextFunction, Request, Response } from 'express';
 import { Error } from 'mongoose';
+import { Md5 } from 'ts-md5';
+import jwt from 'jsonwebtoken';
 import user from '../models/user';
 import NotFoundError from '../errors/notFoundError';
 import BadRequestError from '../errors/badRequestError';
+import UnauthorizedError from '../errors/unauthorizedError';
+import config from '../conifg';
+import ConflictError from '../errors/conflictError';
 
 export const createUser = (req: Request, res: Response, next: NextFunction) => {
-  const { name, about, avatar } = req.body;
-  user.create({ name, about, avatar })
+  const {
+    name, about, avatar, email, password,
+  } = req.body;
+
+  user.create({
+    name, about, avatar, email, password: Md5.hashStr(password),
+  })
     .then((result) => {
       res.status(201).send(result);
     })
     .catch((err) => {
       if (err instanceof Error.CastError || err instanceof Error.ValidationError) next(new BadRequestError('Переданы некорректные данные при создании пользователя. '));
+      else if (err.code === 11000) next(new ConflictError('Пользователь с таким e-mail уже существует.'));
       else next(err);
     });
 };
@@ -59,4 +70,20 @@ export const updateAvatar = (req: Request, res: Response, next: NextFunction) =>
       if (err instanceof Error.CastError || err instanceof Error.ValidationError) next(new BadRequestError('Переданы некорректные данные при обновлении аватара. '));
       else next(err);
     });
+};
+
+export const login = (req: Request, res: Response, next: NextFunction) => {
+  const { email, password } = req.body;
+  user.findOne({ email }).select('+password').then((result) => {
+    if (!result) next(new UnauthorizedError());
+    else if (Md5.hashStr(password) !== result.password) next(new UnauthorizedError('Неверный логин или пароль'));
+    else res.status(200).send({ token: jwt.sign({ _id: result._id }, config.jwt_secret, { expiresIn: '7d' }) });
+  });
+};
+
+export const getMe = (req: Request, res: Response, next: NextFunction) => {
+  user.findOne({ _id: req.body.user._id }).then((result) => {
+    if (!result) next(new NotFoundError('Пользователь по указанному _id не найден.'));
+    res.send(result);
+  }).catch((err) => next(err));
 };
