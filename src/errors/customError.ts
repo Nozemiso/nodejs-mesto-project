@@ -3,8 +3,9 @@ class CustomError extends Error {
 
   statusCode?: number;
 
-  constructor(public message: string) {
+  constructor(public message: string, payload?: Object) {
     super(message);
+    this.payload = payload || {};
   }
 }
 

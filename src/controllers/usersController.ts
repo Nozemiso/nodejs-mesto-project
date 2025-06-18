@@ -2,12 +2,35 @@ import { NextFunction, Request, Response } from 'express';
 import { Error } from 'mongoose';
 import { Md5 } from 'ts-md5';
 import jwt from 'jsonwebtoken';
+import { z } from 'zod';
 import user from '../models/user';
 import NotFoundError from '../errors/notFoundError';
 import BadRequestError from '../errors/badRequestError';
 import UnauthorizedError from '../errors/unauthorizedError';
 import config from '../conifg';
 import ConflictError from '../errors/conflictError';
+
+export const userSchema = z.object({
+  name: z.string().min(2).max(30).optional(),
+  about: z.string().min(2).max(200).optional(),
+  avatar: z.string().url().optional(),
+  email: z.string().email(),
+  password: z.string(),
+});
+
+export const updateUserSchema = z.object({
+  name: z.string().min(2).max(30),
+  about: z.string().min(2).max(200),
+});
+
+export const updateAvatarSchema = z.object({
+  avatar: z.string().url(),
+});
+
+export const loginSchema = z.object({
+  email: z.string().email(),
+  password: z.string(),
+});
 
 export const createUser = (req: Request, res: Response, next: NextFunction) => {
   const {
@@ -17,8 +40,9 @@ export const createUser = (req: Request, res: Response, next: NextFunction) => {
   user.create({
     name, about, avatar, email, password: Md5.hashStr(password),
   })
+    .then((result) => user.findById(result._id).select('-password'))
     .then((result) => {
-      res.status(201).send(result);
+      res.status(200).send(result);
     })
     .catch((err) => {
       if (err instanceof Error.CastError || err instanceof Error.ValidationError) next(new BadRequestError('Переданы некорректные данные при создании пользователя. '));
@@ -47,8 +71,8 @@ export const getUser = (req: Request, res: Response, next: NextFunction) => {
 
 export const updateUser = (req: Request, res: Response, next: NextFunction) => {
   const { name, about } = req.body;
-  const { id } = req.body.user;
-  user.findByIdAndUpdate({ _id: id }, { name, about }, { new: true, runValidators: true })
+  const { _id } = req.body.user;
+  user.findByIdAndUpdate({ _id }, { name, about }, { new: true, runValidators: true })
     .then((result) => {
       if (!result) next(new NotFoundError('Пользователь по указанному _id не найден.'));
       res.send(result);
@@ -60,8 +84,8 @@ export const updateUser = (req: Request, res: Response, next: NextFunction) => {
 
 export const updateAvatar = (req: Request, res: Response, next: NextFunction) => {
   const { avatar } = req.body;
-  const { id } = req.body.user;
-  user.findByIdAndUpdate({ _id: id }, { avatar }, { new: true, runValidators: true })
+  const { _id } = req.body.user;
+  user.findByIdAndUpdate({ _id }, { avatar }, { new: true, runValidators: true })
     .then((result) => {
       if (!result) next(new NotFoundError('Пользователь по указанному _id не найден.'));
       res.send(result);

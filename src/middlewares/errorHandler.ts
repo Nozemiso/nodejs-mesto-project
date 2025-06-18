@@ -3,7 +3,7 @@ import CustomError from '../errors/customError';
 
 const errorHandler = (err: CustomError, req: Request, res: Response, next: NextFunction) => {
   if (!err.statusCode || err.statusCode === 500) res.status(500).send({ message: 'Внутренняя ошибка сервера' });
-  else res.status(err.statusCode).send({ message: err.message });
+  else res.status(err.statusCode).send({ message: err.message, payload: err.payload });
   next();
 };
 

@@ -1,15 +1,16 @@
 import { Router } from 'express';
 import {
-  createCard, deleteCard, getCards, placeLike, removeLike,
+  createCard, createCardSchema, deleteCard, getCards, placeLike, removeLike, requireIdParam,
 } from '../controllers/cardsController';
+import { validateBody, validateParams } from '../middlewares/validation';
 
 const cardsRouter = Router();
 
 cardsRouter.get('/', getCards);
-cardsRouter.post('/', createCard);
-cardsRouter.delete('/:id', deleteCard);
+cardsRouter.post('/', validateBody(createCardSchema), createCard);
+cardsRouter.delete('/:id', validateParams(requireIdParam), deleteCard);
 
-cardsRouter.put('/:id/likes', placeLike);
-cardsRouter.delete('/:id/likes', removeLike);
+cardsRouter.put('/:id/likes', validateParams(requireIdParam), placeLike);
+cardsRouter.delete('/:id/likes', validateParams(requireIdParam), removeLike);
 
 export default cardsRouter;
